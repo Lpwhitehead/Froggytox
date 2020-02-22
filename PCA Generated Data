@@ -1,0 +1,188 @@
+
+################################################################################
+
+#                              MAIN SCRIPT                                     #
+
+################################################################################
+
+#----------------------------TABLE OF CONTENTS----------------------------------
+
+# - Overview
+# - Packages downloaded
+# - Libraries
+# - Data Download 
+# - Workflow 
+# - Pathways
+# - Source the rest of the code
+
+################################################################################
+
+#---------------------------------OVERVIEW--------------------------------------
+
+#The following contents within this main directory include the packages, 
+#libraries, dataset and the workflow that is used in this analysis. For the 
+#purpose of this analysis the scripts should be run in the folling order to gain 
+#replicatory results:
+
+#    1. MainScript:(Data organization with the overview of the workflow used
+#                   in this project)
+#
+#    2. DataCleaning: (How to clean the data that is used for these analyses)
+#
+#
+#    3. DataAnalysisandGraphs: (This includes the code used to run the linear 
+#                               regressions and the graph production)
+
+#------------------------------PACKAGE DOWNLOAD---------------------------------
+
+# This is a list of the package used for these analyses
+
+NA
+
+#---------------------------------LIBRARIES-------------------------------------
+
+# Load the packages in the libraries 
+
+NA
+
+#--------------------------------DATA DOWLOAD-----------------------------------
+
+# The raw data file was originally found from:
+#     https://datadryad.org/stash/dataset/doi:10.5061/dryad.hp
+# 38ct1?fbclid=IwAR2T0qNARXX80OK_fTSZ2B1B3hP4Wr2rCm9BawzTMmfgRSiTTihqGu3mZPM  
+# The datasheet was then downloaded as a csv file. When downloading this 
+# dataset as a csv, we saved the first worksheet titled Osteometrics. 
+
+# The file of the raw data can be accessed with the following code.
+
+working.dir <- getwd()
+
+# This should be set to the working directory of
+# the "BigDataChallenge_Master" folder after downloading this repo. 
+
+raw.data <- read.csv("froggytox.csv")
+
+#-----------------------------------WORKFLOW------------------------------------
+
+# In our working firectory we created 4 pathways to different folders with 
+# specific outputs 
+
+#           - 1.Raw.Data  -> the path to this folder is: rd.path
+#                 (This folder contains a copy of the original downloaded
+#                   data set without changes.)
+#
+#           - 2.Analysis -> the path to this folder is: an.path
+#                 (This folder contains saved outputs of our anaylsis.)
+#
+#           - 3.Graphs -> the path to this folder is: gr.path
+#                 (This folder contains all visualizations of data.)
+
+output.folders <- c("1.Raw.Data","2.Analysis","3.Graphs")
+
+# Check to see if the folders exist in the working directory and if they don't, 
+# use the following loop. 
+# The following loop checks the output.folders list and checks to see 
+# if the folders exist in the working directory. If they don't it will create 
+# them. 
+
+
+#-------- Pathways----------
+
+# The following is a directory of the pathways to each of our output folders
+
+# Path to 1.Raw.Data folder
+rd.path <- paste(working.dir,"/",output.folders[1], "/", sep="")
+
+
+# Path to 2.Analysis
+an.path <- paste(working.dir,"/",output.folders[2], "/", sep="")
+
+# Path to 3.Graphs
+gr.path <- paste(working.dir,"/",output.folders[3], "/", sep="")
+
+# Now we can save our raw data into the raw data file. 
+
+write.csv(raw.data, paste(rd.path, "froggytox.csv"),
+          row.names = FALSE)
+#-----------Source the other scripts----------- 
+#Eventually the scripts in order will go here
+#this is the code that does it V
+#source("2. Data.Cleaning.R")
+
+######Generating random numbers######
+
+
+#generate random numbers for data set 
+a <- rnorm(100,3,200)
+a
+#generating related numbers
+b<--2*a
+b
+#plot relationship between a and b
+plot(a,b)
+#create data frame for a and b
+a.b<-data.frame(a,b)
+a.b
+
+#generate more random numbers
+x <- rnorm(100,3,6)
+#generate  more unrelated numbers
+y <-rnorm(100,6,3)
+#plot relationship between x and y
+plot(x,y)
+#create data frame for x and y
+x.y<-data.frame(x,y)
+x.y
+
+######plotting pca#######
+
+#individaul first (attempting to understand pca relationships better)
+
+#creating pca a.b
+pca.a.b <- prcomp(t(a.b), scale=TRUE)
+#plotting pca a.b
+plot(pca.a.b$x[,1], pca.a.b$x[,2])
+
+#creating pca x.y
+pca.x.y<- prcomp(t(x.y), scale=TRUE)
+#plotting pca x.y
+plot(pca.x.y$x[,1], pca.x.y$x[,2])
+
+
+#running pca with a,b,x and y
+#creating data frame
+a.b.x.y<-data.frame(a,b,x,y)
+#running pca
+pca.a.b.x.y<- prcomp(t(a.b.x.y), scale=TRUE)
+#plotting pca
+plot(pca.a.b.x.y$x[,1], pca.a.b.x.y$x[,2])
+#note there are now four data points instead of 2
+
+#######generating scree plots########
+
+#making a scree plot a.b
+#finding the squared value of the standerd deviation of pca
+pca.var.a.b <- pca.a.b$sdev^2
+#converting to percentage
+pca.var.a.b.per <- round(pca.var.a.b/sum(pca.var.a.b)*100, 1)
+pca.var.a.b.per
+#Plotting on bargraph
+barplot(pca.var.a.b.per, main="Scree Plot", xlab="Principal Component", ylab="Percent Variation")
+
+#making a scree plot x.y
+#finding the squared value of the standard deviation of the pca
+pca.var.x.y <- pca.x.y$sdev^2
+#converting to percentage
+pca.var.x.y.per <- round(pca.var.x.y/sum(pca.var.x.y)*100, 1)
+#plotting on bargraph
+barplot(pca.var.x.y.per,main="Scree Plt XY", xlab="Principal Componenet", ylab = "Percent Variation")
+
+#Making a scree plot a.b.x.y
+##finding the squared value of the standard deviation of the pca
+pca.var.a.b.x.y <- pca.a.b.x.y$sdev^2
+#converting to percentage 
+pca.var.a.b.x.y.per<- round(pca.var.a.b.x.y/sum(pca.var.a.b.x.y)*100,1)
+#converting to a barplot
+barplot(pca.var.a.b.x.y.per, main = "Scree Plot ABXY",)
+
+########end of script.
