@@ -1,3 +1,7 @@
+
+###### PCA ON FROG DATA
+
+
 ##### Cleaning the data#######
 #importing raw data
 d <- read.csv("Froggytox.csv", stringsAsFactors = FALSE)
