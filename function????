@@ -1,0 +1,310 @@
+################################################################################
+
+#                              MAIN SCRIPT                                     #
+
+################################################################################
+
+#----------------------------TABLE OF CONTENTS----------------------------------
+
+# - Overview
+# - Packages downloaded
+# - Libraries
+# - Data Download 
+# - Workflow 
+# - Pathways
+# - Source the rest of the code
+  #- Cleaning
+  #- prcomp
+  #- PCA
+  #-Visuals
+
+################################################################################
+
+#---------------------------------OVERVIEW--------------------------------------
+
+#The following contents within this main directory include the packages, 
+#libraries, dataset and the workflow that is used in this analysis. For the 
+#purpose of this analysis the scripts should be run in the folling order to gain 
+#replicatory results:
+
+#    1. MainScript:(Data organization with the overview of the workflow used
+#                   in this project)
+#
+#    2. DataCleaning: (How to clean the data that is used for these analyses)
+#
+#
+#    3. DataAnalysisandGraphs: (This includes the code used to run the linear 
+#                               regressions and the graph production)
+
+#------------------------------PACKAGE DOWNLOAD---------------------------------
+
+# This is a list of the package used for these analyses
+
+install.packages("FactoMineR")
+install.packages("factoextra")
+
+#---------------------------------LIBRARIES-------------------------------------
+
+# Load the packages in the libraries 
+library("FactoMineR")
+library("factoextra")
+
+#--------------------------------DATA DOWLOAD-----------------------------------
+
+# The raw data file was originally found from:
+#     https://datadryad.org/stash/dataset/doi:10.5061/dryad.hp
+# 38ct1?fbclid=IwAR2T0qNARXX80OK_fTSZ2B1B3hP4Wr2rCm9BawzTMmfgRSiTTihqGu3mZPM  
+# The datasheet was then downloaded as a csv file. When downloading this 
+# dataset as a csv, we saved the first worksheet titled Osteometrics. 
+
+# The file of the raw data can be accessed with the following code.
+
+working.dir <- getwd()
+
+# This should be set to the working directory of
+# the "BigDataChallenge_Master" folder after downloading this repo. 
+
+raw.data <- read.csv("froggytox.csv")
+
+#-----------------------------------WORKFLOW------------------------------------
+
+# In our working firectory we created 4 pathways to different folders with 
+# specific outputs 
+
+#           - 1.Raw.Data  -> the path to this folder is: rd.path
+#                 (This folder contains a copy of the original downloaded
+#                   data set without changes.)
+#
+#           - 2.Analysis -> the path to this folder is: an.path
+#                 (This folder contains saved outputs of our anaylsis.)
+#
+#           - 3.Graphs -> the path to this folder is: gr.path
+#                 (This folder contains all visualizations of data.)
+
+output.folders <- c("1.Raw.Data","2.Analysis","3.Graphs")
+
+# Check to see if the folders exist in the working directory and if they don't, 
+# use the following loop. 
+# The following loop checks the output.folders list and checks to see 
+# if the folders exist in the working directory. If they don't it will create 
+# them. 
+
+
+#-------- Pathways----------
+
+# The following is a directory of the pathways to each of our output folders
+
+# Path to 1.Raw.Data folder
+rd.path <- paste(working.dir,"/",output.folders[1], "/", sep="")
+
+
+# Path to 2.Analysis
+an.path <- paste(working.dir,"/",output.folders[2], "/", sep="")
+
+# Path to 3.Graphs
+gr.path <- paste(working.dir,"/",output.folders[3], "/", sep="")
+
+# Now we can save our raw data into the raw data file. 
+
+write.csv(raw.data, paste(rd.path, "froggytox.csv"),
+          row.names = FALSE)
+#-----------Source the other scripts----------- 
+#Eventually the scripts in order will go here
+#this is the code that does it V
+#source("2. Data.Cleaning.R")
+
+
+##### Cleaning the data#######
+#importing raw data
+
+d <- read.csv("Froggytox.csv", stringsAsFactors = FALSE)
+
+#check structure to ensure data is in numerical format
+str(d)
+
+#Remove any rows with missing data
+d.omit<-na.omit(d)
+d.omit
+
+
+#######Computing PCA using prcomp#########
+
+#Computing pca using prcomp (excluding binomial gender data)
+#Only including numerical collums
+pca.froggy<-prcomp(t(d.omit[,-c(1,3,4,7)]), scale=TRUE)
+pca.froggy
+
+#Making Scree plots to display the data
+#first square the standard deviation of the pca
+pca.var.froggy <- pca.froggy$sdev^2
+#Convert the squared standard deviation into a percent
+pca.var.froggy.per <- round(pca.var.froggy/sum(pca.var.froggy)*100, 1)
+pca.var.froggy.per
+#plot the percent
+barplot(pca.var.froggy.per, main="Scree Plotof Frog Varience without Gender", xlab="Principal Component", ylab="Percent Variation")
+
+
+#Computing pca using prcomp method (including binomial gender data)
+
+
+
+#first gender data must be numeric. Lets make gender numerical!
+#creating numeric frog sex vector
+frogsex<-as.numeric(d.omit$frogsex)
+#join vector to dataframe
+d.omit.plus<-cbind(d.omit, frogsex)
+#Run pca on data removing non numeric colums
+pca.froggy.gen<-prcomp(t(d.omit[,-c(1,3,4,7)]))
+
+#making scree plot with gender
+#Squring the standard deviation of the pca
+pca.var.froggy.gen <- pca.froggy.gen$sdev^2
+#Converting into percentage
+pca.var.froggy.gen.per<- round(pca.var.froggy.gen/sum(pca.var.froggy.gen)*100, 1)
+pca.var.froggy.gen.per
+#Plotting as barplot
+barplot(pca.var.froggy.gen.per, main="Scree Plot of Frog Varience with Gender", xlab="Principal Component", ylab="Percent Variation")
+
+########Computing pca using PCA method (as seen in FactoMineR and factoextra packages)#########
+
+#Installing and loading library
+install.packages("FactoMineR")
+install.packages("factoextra")
+library("FactoMineR")
+library("factoextra")
+
+
+
+
+#Calculating wihtout Gender
+#Computing pca
+pca.nogender<-PCA(d.omit[,-c(1,3,4,7)], scale.unit = TRUE, ncp = 5, graph = TRUE)
+pca.nogender
+
+#getting eigenvalues
+eig.val.nogender<- get_eigenvalue(pca.nogender)
+eig.val.nogender
+
+#scree plot
+pdf(file = paste(gr.path, "screeplot.nogender.pdf"), width = 5, height = 5) #open pdf
+fviz_eig(pca.nogender, addlabels = TRUE, ylim = c(0, 50))
+dev.off()
+
+
+#Calculating Variation Values
+
+#variation without gender
+var.nogender <- get_pca_var(pca.nogender)
+var.nogender
+
+#########Visually displaying the data########
+
+
+
+
+#******************funtion 
+#names.graphs vector of names for the graphs
+
+names.mphi <- "frog"
+pcagraphs<-function( names.graphs, pca.data){
+#Percent Contribution Graphs
+
+ # names.graphs <- names.mphi 
+  #pca.data <- pca.nogender
+  
+  
+#Plotting the contrbution of each variable without gender
+pdf(file = paste(gr.path, names.graphs, ".contribution.nogender.pdf"), width = 5, height = 5) #open pdf
+fviz_contrib(pca.data, choice = "var", axes = 1:2, title = "contribution of Variables", file= paste(working.dir,"/",output.folders[3], "/", sep=""))
+dev.off()
+
+
+
+#Two Dimensional PCA Graphs
+
+#plot the pca (no gender) using two dimensions
+pdf(file = paste(gr.path, names.graphs, "pcaplot.nogender.pdf"), width = 5, height = 5) #open pdf
+fviz_pca_ind(pca.data, col.ind = "cos2", 
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE 
+)
+dev.off()
+
+
+#PCA Biplots
+
+#making pca biplots (without gender)
+pdf(file = paste(gr.path, names.graphs, "biplots.gender.pdf"), width = 5, height = 5) #open pdf
+fviz_pca_biplot(pca.data, repel = TRUE,
+                col.var = "#2E9FDF", # Variables color
+                col.ind = "#696969"  # Individuals color
+)
+dev.off()
+}
+
+
+pcagraphs(names.mphi,pca.nogender)
+
+
+#*********************end function 
+
+pcagraphs(names, pca.gender)
+########Same thing with gender
+
+#Calculating with Binomial Gender Values
+#Computing pca with gender(Note PCA instead of prcomp)
+pca.gender<-PCA(d.omit.plus[,-c(1,3,4,7)], scale.unit = TRUE, ncp = 5, graph = TRUE)
+pca.gender
+
+#Calculating eigenvalues
+eig.val <- get_eigenvalue(pca.gender)
+eig.val
+
+#making a scree plot
+pdf(file = paste(gr.path, "screeplot.gender.pdf"), width = 5, height = 5) #open pdf
+fviz_eig(pca.gender, addlabels = TRUE, ylim = c(0, 50))
+dev.off() #close pdf
+
+#Variation with gender
+var <- get_pca_var(pca.gender)
+var
+
+
+#Plotting the contribution of each variable with gender
+pdf(file = paste(gr.path, "contribution.gender.pdf"), width = 5, height = 5) #open pdf
+fviz_contrib(pca.gender, choice = "var", axes = 1:2, title ="Contribution of Variables")
+dev.off()
+                
+#making pca biplots (with gender)
+pdf(file = paste(gr.path, "biplots.nogender.pdf"), width = 5, height = 5) #open pdf
+fviz_pca_biplot(pca.gender, repel = TRUE,
+                col.var = "#2E9FDF", # Variables color
+                col.ind = "#696969"  # Individuals color
+)
+dev.off()
+
+#plot the pca (gender) using two dimensions
+pdf(file = paste(gr.path, "pcaplot.gender.pdf"), width = 5, height = 5) #open pdf
+fviz_pca_ind(pca.gender, col.ind = "cos2", 
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE 
+)
+dev.off()
+
+                
+                
+                
+
+
+
+                
+
+#Still need to create file links and create function to generate graphs
+#Want to redo analysis considering scaled pca data(z scores) and unscaled data
+
+# will repeat similar script for linear Discriminant function analysis
+
+#######end of script
+                              
+                
+        
